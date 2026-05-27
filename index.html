@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="코코 다이어트" />
+  <meta name="theme-color" content="#e8845a" />
+  <title>코코 다이어트 기록장</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #e8845a;
+      --primary-dark: #d4614a;
+      --bg: #fdf6ee;
+      --bg2: #fce8d5;
+      --white: #ffffff;
+      --text: #333333;
+      --muted: #aaaaaa;
+      --border: #f0e8e0;
+      --light: #f5ede8;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      color: var(--text);
+      padding-bottom: 90px;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      padding: 44px 22px 22px;
+      color: white;
+      box-shadow: 0 4px 20px rgba(212,97,74,0.3);
+    }
+    .header-sub { font-size: 11px; opacity: 0.8; letter-spacing: 1px; margin-bottom: 4px; }
+    .header-date { font-size: 18px; font-weight: 800; }
+    .header-cards { display: flex; gap: 10px; margin-top: 16px; }
+    .header-card {
+      flex: 1; background: rgba(255,255,255,0.2); border-radius: 14px;
+      padding: 12px 8px; text-align: center;
+    }
+    .header-card .num { font-size: 22px; font-weight: 800; }
+    .header-card .num span { font-size: 13px; font-weight: 400; }
+    .header-card .lbl { font-size: 10px; opacity: 0.85; margin-top: 2px; }
+
+    /* Tabs */
+    .tabs {
+      display: flex; margin: 18px 18px 0;
+      background: rgba(255,255,255,0.65); border-radius: 16px;
+      padding: 4px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .tab-btn {
+      flex: 1; padding: 10px 4px; border: none; border-radius: 12px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      transition: all 0.25s; background: transparent; color: #999;
+      font-family: inherit;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white; box-shadow: 0 2px 8px rgba(212,97,74,0.3);
+    }
+
+    /* Content */
+    .content { padding: 16px 18px; }
+    .section-hint { font-size: 12px; color: var(--muted); margin-bottom: 14px; font-weight: 600; }
+
+    /* Checklist */
+    .check-item {
+      display: flex; align-items: center; gap: 14px;
+      background: white; border: 1.5px solid var(--border);
+      border-radius: 16px; padding: 14px 16px; margin-bottom: 10px;
+      cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .check-item.done {
+      background: linear-gradient(135deg, #fff5f0, #ffe8dc);
+      border-color: var(--primary);
+      box-shadow: 0 4px 16px rgba(232,132,90,0.15);
+      transform: scale(1.01);
+    }
+    .check-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: var(--light); display: flex; align-items: center;
+      justify-content: center; font-size: 20px; transition: all 0.25s;
+      flex-shrink: 0;
+    }
+    .check-item.done .check-icon { background: var(--primary); color: white; font-size: 18px; }
+    .check-label { font-weight: 700; font-size: 15px; transition: all 0.2s; }
+    .check-item.done .check-label { color: var(--primary-dark); text-decoration: line-through; }
+    .check-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .check-box {
+      width: 24px; height: 24px; border-radius: 8px;
+      border: 2px solid #ddd; margin-left: auto; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.25s;
+    }
+    .check-item.done .check-box { background: var(--primary); border-color: var(--primary); color: white; font-weight: 700; font-size: 14px; }
+
+    .all-done {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 16px; padding: 20px; text-align: center;
+      color: white; margin-top: 8px;
+      box-shadow: 0 4px 20px rgba(212,97,74,0.3);
+      display: none;
+    }
+    .all-done.show { display: block; }
+    .all-done .big { font-size: 30px; margin-bottom: 6px; }
+    .all-done .title { font-size: 16px; font-weight: 800; }
+    .all-done .sub { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+
+    /* Meal input */
+    .meal-input-box {
+      background: white; border-radius: 20px; padding: 18px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06); margin-bottom: 16px;
+    }
+    .input-label { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 10px; }
+    .cat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .cat-btn {
+      padding: 6px 10px; border-radius: 10px; border: none;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      background: var(--light); color: #999; transition: all 0.2s;
+      font-family: inherit;
+    }
+    .cat-btn.active { background: var(--primary); color: white; }
+    input[type="text"] {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 12px 14px; font-size: 14px; outline: none;
+      margin-bottom: 8px; color: var(--text); background: #fdf8f5;
+      font-family: inherit; transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: var(--primary); }
+    .add-btn {
+      width: 100%; padding: 13px; border: none; border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white; font-size: 15px; font-weight: 700; cursor: pointer;
+      font-family: inherit; box-shadow: 0 4px 12px rgba(212,97,74,0.3);
+    }
+
+    /* Meal list */
+    .meal-item {
+      background: white; border-radius: 14px; padding: 14px 16px;
+      margin-bottom: 8px; display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1.5px solid #f5ede8;
+    }
+    .meal-emoji {
+      background: #fdf0e8; border-radius: 10px; padding: 8px 10px;
+      font-size: 20px; line-height: 1; flex-shrink: 0;
+    }
+    .meal-name { font-weight: 700; font-size: 14px; }
+    .meal-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .del-btn {
+      background: none; border: none; color: #ddd; font-size: 20px;
+      cursor: pointer; padding: 4px 8px; margin-left: auto; flex-shrink: 0;
+    }
+    .empty {
+      text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px;
+    }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+    /* Summary */
+    .summary-box {
+      background: white; border-radius: 20px; padding: 20px;
+      margin-bottom: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .summary-title { font-weight: 800; font-size: 15px; margin-bottom: 14px; }
+    .summary-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .summary-dot {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--light); display: flex; align-items: center;
+      justify-content: center; font-size: 14px; flex-shrink: 0;
+    }
+    .summary-dot.done { background: var(--primary); color: white; }
+    .progress-bar {
+      height: 8px; background: var(--light); border-radius: 99px; overflow: hidden; margin-top: 14px;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+      border-radius: 99px; transition: width 0.5s ease;
+    }
+    .progress-label { text-align: right; font-size: 12px; color: var(--primary); margin-top: 6px; font-weight: 700; }
+    .divider { border: none; border-top: 1px solid #f5ede8; margin: 10px 0; }
+    .tip-box {
+      background: linear-gradient(135deg, #fff8f5, #ffeee5);
+      border: 1.5px solid #f5d4c0; border-radius: 16px; padding: 18px;
+    }
+    .tip-title { font-weight: 800; font-size: 14px; color: var(--primary-dark); margin-bottom: 8px; }
+    .tip-text { font-size: 13px; color: #666; line-height: 1.8; }
+
+    /* Tab panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-sub">알뜰한코코의 다이어트 기록장 🌿</div>
+  <div class="header-date" id="today-date"></div>
+  <div class="header-cards">
+    <div class="header-card">
+      <div class="num"><span id="checked-count">0</span><span>/4</span></div>
+      <div class="lbl">아침 루틴</div>
+    </div>
+    <div class="header-card">
+      <div class="num"><span id="meal-count">0</span><span>건</span></div>
+      <div class="lbl">오늘 식사</div>
+    </div>
+    <div class="header-card" id="status-card">
+      <div class="num" id="status-icon">⏳</div>
+      <div class="lbl" id="status-lbl">진행중</div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('checklist')">☀️ 아침 루틴</button>
+  <button class="tab-btn" onclick="switchTab('meals')">📝 식사 기록</button>
+  <button class="tab-btn" onclick="switchTab('today')">📋 오늘 요약</button>
+</div>
+
+<div class="content">
+
+  <!-- Checklist Tab -->
+  <div class="tab-panel active" id="tab-checklist">
+    <div class="section-hint">매일 아침 루틴을 체크해요 ✨</div>
+
+    <div class="check-item" id="ci-water" onclick="toggleCheck('water')">
+      <div class="check-icon" id="ico-water">💧</div>
+      <div>
+        <div class="check-label">물 1L 마시기</div>
+        <div class="check-detail">기상 후 공복에</div>
+      </div>
+      <div class="check-box" id="cb-water"></div>
+    </div>
+
+    <div class="check-item" id="ci-lemon" onclick="toggleCheck('lemon')">
+      <div class="check-icon" id="ico-lemon">🍋</div>
+      <div>
+        <div class="check-label">레몬 한 스푼</div>
+        <div class="check-detail">상온 물에 짜서</div>
+      </div>
+      <div class="check-box" id="cb-lemon"></div>
+    </div>
+
+    <div class="check-item" id="ci-olive" onclick="toggleCheck('olive')">
+      <div class="check-icon" id="ico-olive">🫒</div>
+      <div>
+        <div class="check-label">올리브오일 한 스푼</div>
+        <div class="check-detail">엑스트라 버진</div>
+      </div>
+      <div class="check-box" id="cb-olive"></div>
+    </div>
+
+    <div class="check-item" id="ci-suppl" onclick="toggleCheck('suppl')">
+      <div class="check-icon" id="ico-suppl">💊</div>
+      <div>
+        <div class="check-label">영양제 챙기기</div>
+        <div class="check-detail">식후 or 식전 확인</div>
+      </div>
+      <div class="check-box" id="cb-suppl"></div>
+    </div>
+
+    <div class="all-done" id="all-done-msg">
+      <div class="big">🎉</div>
+      <div class="title">오늘 아침 루틴 완료!</div>
+      <div class="sub">최고예요 코코님! 오늘 하루도 파이팅 💪</div>
+    </div>
+  </div>
+
+  <!-- Meals Tab -->
+  <div class="tab-panel" id="tab-meals">
+    <div class="section-hint">오늘 먹은 것들을 기록해요 🍽️</div>
+
+    <div class="meal-input-box">
+      <div class="input-label">+ 새 식사 추가</div>
+      <div class="cat-row" id="cat-row"></div>
+      <input type="text" id="meal-input" placeholder="예) 현미밥 반공기, 닭가슴살…" />
+      <input type="text" id="note-input" placeholder="메모 (선택) — 점심, 야식, 외식…" />
+      <button class="add-btn" onclick="addMeal()">기록하기 ✓</button>
+    </div>
+
+    <div id="meal-list"></div>
+  </div>
+
+  <!-- Today Tab -->
+  <div class="tab-panel" id="tab-today">
+    <div class="section-hint">오늘 하루를 한눈에 봐요 📋</div>
+
+    <div class="summary-box">
+      <div class="summary-title">☀️ 아침 루틴 현황</div>
+      <div id="summary-routine"></div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="progress-label" id="prog-label">0/4 완료</div>
+    </div>
+
+    <div class="summary-box">
+      <div class="summary-title">🍽️ 오늘 식사 기록 (<span id="sum-meal-count">0</span>건)</div>
+      <div id="summary-meals"></div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-title">💡 오늘의 다이어트 팁</div>
+      <div class="tip-text" id="daily-tip"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const TIPS = [
+    "입이 심심할 때는 먼저 물 한 잔 🥛<br>10분 기다려도 먹고 싶으면 그때 오이나 탄산수로!<br>충동 식욕은 대부분 <strong>5~10분이면 사라져요</strong> 💪",
+    "식사 전 물 한 잔은 포만감을 높여줘요 🌊<br>천천히 먹고 20분을 기다리면 진짜 배부른지 알 수 있어요.",
+    "오늘 아침 루틴을 완료하면 하루 시작이 달라져요 🌅<br>작은 습관이 쌓이면 몸이 먼저 변화를 느껴요.",
+    "심심함 vs 진짜 배고픔을 구분해보세요 🤔<br>마지막 식사 후 2시간 이내라면 대부분 심심함이에요.",
+    "탄산수는 최고의 입 달래기 아이템이에요 🫧<br>청량감이 식욕을 자연스럽게 줄여줘요.",
+  ];
+
+  const ROUTINES = [
+    { id: "water", emoji: "💧", label: "물 1L 마시기" },
+    { id: "lemon", emoji: "🍋", label: "레몬 한 스푼" },
+    { id: "olive", emoji: "🫒", label: "올리브오일 한 스푼" },
+    { id: "suppl", emoji: "💊", label: "영양제 챙기기" },
+  ];
+
+  const CATS = ["🍚 밥/면류","🥩 단백질","🥗 채소","🍱 간식","☕ 음료","🍜 기타"];
+  let selectedCat = CATS[0];
+
+  // State
+  let state = { checklist: {}, meals: [] };
+
+  function getKey() {
+    return "diet-" + new Date().toISOString().slice(0,10);
+  }
+
+  function load() {
+    const raw = localStorage.getItem(getKey());
+    if (raw) state = JSON.parse(raw);
+    else state = { checklist: {}, meals: [] };
+  }
+
+  function save() {
+    localStorage.setItem(getKey(), JSON.stringify(state));
+  }
+
+  // Date
+  function setDate() {
+    const d = new Date();
+    const opts = { year:"numeric", month:"long", day:"numeric", weekday:"long" };
+    document.getElementById("today-date").textContent = d.toLocaleDateString("ko-KR", opts);
+    document.getElementById("daily-tip").innerHTML = TIPS[d.getDay() % TIPS.length];
+  }
+
+  // Tabs
+  function switchTab(name) {
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("tab-" + name).classList.add("active");
+    event.currentTarget.classList.add("active");
+    if (name === "today") renderSummary();
+  }
+
+  // Categories
+  function renderCats() {
+    const row = document.getElementById("cat-row");
+    row.innerHTML = CATS.map(c =>
+      `<button class="cat-btn${c===selectedCat?" active":""}" onclick="selectCat('${c}')">${c}</button>`
+    ).join("");
+  }
+
+  function selectCat(c) {
+    selectedCat = c;
+    renderCats();
+  }
+
+  // Checklist
+  function toggleCheck(id) {
+    state.checklist[id] = !state.checklist[id];
+    save();
+    renderChecklist();
+    renderHeader();
+  }
+
+  function renderChecklist() {
+    ROUTINES.forEach(r => {
+      const done = !!state.checklist[r.id];
+      document.getElementById("ci-" + r.id).className = "check-item" + (done ? " done" : "");
+      document.getElementById("ico-" + r.id).textContent = done ? "✓" : r.emoji;
+      const cb = document.getElementById("cb-" + r.id);
+      cb.textContent = done ? "✓" : "";
+    });
+    const allDone = ROUTINES.every(r => state.checklist[r.id]);
+    document.getElementById("all-done-msg").className = "all-done" + (allDone ? " show" : "");
+  }
+
+  // Meals
+  function addMeal() {
+    const name = document.getElementById("meal-input").value.trim();
+    if (!name) return;
+    const note = document.getElementById("note-input").value.trim();
+    const time = new Date().toLocaleTimeString("ko-KR", { hour:"2-digit", minute:"2-digit" });
+    state.meals.push({ id: Date.now(), name, cat: selectedCat, note, time });
+    save();
+    document.getElementById("meal-input").value = "";
+    document.getElementById("note-input").value = "";
+    renderMeals();
+    renderHeader();
+  }
+
+  function deleteMeal(id) {
+    state.meals = state.meals.filter(m => m.id !== id);
+    save();
+    renderMeals();
+    renderHeader();
+  }
+
+  function renderMeals() {
+    const list = document.getElementById("meal-list");
+    if (!state.meals.length) {
+      list.innerHTML = `<div class="empty"><div class="empty-icon">🍽️</div>아직 기록한 식사가 없어요</div>`;
+      return;
+    }
+    list.innerHTML = state.meals.map(m => `
+      <div class="meal-item">
+        <div class="meal-emoji">${m.cat.split(" ")[0]}</div>
+        <div>
+          <div class="meal-name">${m.name}</div>
+          <div class="meal-meta">${m.time}${m.note ? " · " + m.note : ""} · ${m.cat.split(" ")[1]||""}</div>
+        </div>
+        <button class="del-btn" onclick="deleteMeal(${m.id})">×</button>
+      </div>
+    `).join("");
+  }
+
+  // Header
+  function renderHeader() {
+    const checked = ROUTINES.filter(r => state.checklist[r.id]).length;
+    const allDone = checked === ROUTINES.length;
+    document.getElementById("checked-count").textContent = checked;
+    document.getElementById("meal-count").textContent = state.meals.length;
+    document.getElementById("status-icon").textContent = allDone ? "🌟" : "⏳";
+    document.getElementById("status-lbl").textContent = allDone ? "완료!" : "진행중";
+  }
+
+  // Summary
+  function renderSummary() {
+    const checked = ROUTINES.filter(r => state.checklist[r.id]).length;
+    document.getElementById("summary-routine").innerHTML = ROUTINES.map(r => {
+      const done = !!state.checklist[r.id];
+      return `<div class="summary-row">
+        <div class="summary-dot${done?" done":""}">${done?"✓":"-"}</div>
+        <span style="font-size:14px;font-weight:${done?700:400};color:${done?"#333":"#bbb"}">${r.emoji} ${r.label}</span>
+      </div>`;
+    }).join("");
+    document.getElementById("prog-fill").style.width = (checked/4*100)+"%";
+    document.getElementById("prog-label").textContent = checked + "/4 완료";
+
+    document.getElementById("sum-meal-count").textContent = state.meals.length;
+    const sumMeals = document.getElementById("summary-meals");
+    if (!state.meals.length) {
+      sumMeals.innerHTML = `<div style="color:#bbb;font-size:14px;text-align:center;padding:20px 0">아직 기록이 없어요</div>`;
+    } else {
+      sumMeals.innerHTML = state.meals.map(m => `
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+            <div>
+              <span style="font-size:14px;font-weight:700">${m.name}</span>
+              ${m.note?`<span style="font-size:12px;color:#bbb;margin-left:6px">(${m.note})</span>`:""}
+            </div>
+            <span style="font-size:12px;color:#bbb">${m.time}</span>
+          </div>
+          <hr class="divider"/>
+        </div>
+      `).join("");
+    }
+  }
+
+  // Input enter key
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("meal-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") addMeal();
+    });
+  });
+
+  // Init
+  load();
+  setDate();
+  renderCats();
+  renderChecklist();
+  renderMeals();
+  renderHeader();
+</script>
+</body>
+</html>
